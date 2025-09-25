@@ -1,0 +1,171 @@
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minimalist Music Player</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>"
+    />
+  </head>
+  <body>
+    <input type="file" id="fileInput" accept="audio/*" />
+
+    <!-- Bouton toggle DÉPLACÉ EN DEHORS du panneau -->
+    <button id="togglePanel">☰</button>
+
+    <!-- Bouton d'export -->
+    <button id="exportButton" class="export-btn" style="display: none">
+      📹 Exporter vidéo
+    </button>
+
+    <!-- Message de succès -->
+    <div id="successMessage" class="success-message">
+      ✅ Vidéo exportée avec succès!
+    </div>
+
+    <!-- Popup d'export -->
+    <div id="exportPopup" class="popup-overlay">
+      <div class="popup-content">
+        <div class="popup-header">
+          <h2>📹 Exporter la vidéo</h2>
+          <button id="closePopup" class="close-btn">✕</button>
+        </div>
+
+        <div class="popup-body">
+          <div class="export-option fade-in-up">
+            <label>
+              <input type="radio" name="exportType" value="full" checked />
+              Exporter la musique complète
+            </label>
+            <p class="duration-info" id="fullDuration">Durée: --:--</p>
+          </div>
+
+          <div class="export-option fade-in-up">
+            <label>
+              <input type="radio" name="exportType" value="custom" />
+              Exporter un extrait personnalisé
+            </label>
+            <div
+              class="time-inputs"
+              id="customTimeInputs"
+              style="display: none"
+            >
+              <div class="time-input-group">
+                <label>Début:</label>
+                <input type="time" id="startTime" step="1" value="00:00:00" />
+              </div>
+              <div class="time-input-group">
+                <label>Fin:</label>
+                <input type="time" id="endTime" step="1" value="00:01:00" />
+              </div>
+              <p class="duration-info" id="customDuration">Durée: 01:00</p>
+            </div>
+          </div>
+
+          <div class="format-section fade-in-up">
+            <label>📱 Format de la vidéo:</label>
+            <select id="formatSelect">
+              <option value="landscape" selected>
+                🖥️ Paysage (16:9) - YouTube Desktop
+              </option>
+              <option value="portrait">
+                📱 Portrait (9:16) - Reels/Stories
+              </option>
+              <option value="square">⬜ Carré (1:1) - Instagram Post</option>
+            </select>
+          </div>
+
+          <div class="quality-section fade-in-up">
+            <label>🎬 Qualité vidéo:</label>
+            <select id="qualitySelect">
+              <option value="720">🎥 HD (720p)</option>
+              <option value="1080" selected>🎬 Full HD (1080p)</option>
+              <option value="480">📱 SD (480p)</option>
+            </select>
+          </div>
+
+          <div class="export-actions fade-in-up">
+            <button id="exportVideoBtn" class="export-action-btn primary">
+              📥 Télécharger
+            </button>
+            <button
+              id="shareTwitterBtn"
+              class="export-action-btn social twitter"
+            >
+              🐦 Twitter
+            </button>
+            <button
+              id="shareInstagramBtn"
+              class="export-action-btn social instagram"
+            >
+              📷 Instagram
+            </button>
+          </div>
+
+          <div
+            id="exportProgress"
+            class="progress-container"
+            style="display: none"
+          >
+            <div class="progress-bar">
+              <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <p id="progressText">Préparation de l'export...</p>
+            <button id="cancelExportBtn" class="cancel-export-btn">
+              ❌ Annuler l'export
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panneau de contrôle - SUPPRESSION du bouton toggle de l'intérieur -->
+    <div id="controlPanel">
+      <!-- <button id="togglePanel">☰</button> ← SUPPRIMÉ -->
+      <h2>✨ Effets</h2>
+      <label class="fade-in-up">
+        <input type="checkbox" id="rainbowEffect" />
+        🌈 Couleurs arc-en-ciel
+      </label>
+      <label class="fade-in-up">
+        <input type="checkbox" id="glowEffect" />
+        ✨ Halo lumineux
+      </label>
+      <label class="fade-in-up">
+        <input type="checkbox" id="particlesEffect" />
+        🎆 Particules
+      </label>
+
+      <label class="fade-in-up">
+        🔄 Taille maximale :
+        <input type="range" id="maxRadius" min="100" max="400" value="200" />
+      </label>
+
+      <label class="fade-in-up">
+        ⚡ Vitesse rotation :
+        <input
+          type="range"
+          id="rotationSpeed"
+          min="0"
+          max="0.1"
+          step="0.005"
+          value="0.02"
+        />
+      </label>
+
+      <h2>🎨 Formes</h2>
+      <select id="shapeSelect" class="fade-in-up">
+        <option value="circle">⭕ Cercle</option>
+        <option value="square">⬜ Carré</option>
+        <option value="triangle">🔺 Triangle</option>
+        <option value="hexagon">⬟ Hexagone</option>
+        <option value="star">⭐ Étoile</option>
+      </select>
+    </div>
+
+    <canvas id="canvas"></canvas>
+    <script src="script.js"></script>
+  </body>
+</html>

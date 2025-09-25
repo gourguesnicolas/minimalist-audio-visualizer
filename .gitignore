@@ -1,0 +1,36 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dossiers de cache
+.cache/
+.temp/
+
+# Fichiers de sauvegarde
+*.bak
+*~
+
+# Fichiers audio temporaires (pour éviter d'avoir de gros fichiers dans le repo)
+*.mp3
+*.wav
+*.m4a
+*.flac
+
+# Fichiers IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node modules si on ajoute des dépendances plus tard
+node_modules/
+package-lock.json
+
+# Build files
+dist/
+build/
