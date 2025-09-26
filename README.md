@@ -1,4 +1,4 @@
-# 🎵 Visualiseur Audio Modern
+# 🎵 Visualiseur Audio Moderne
 
 Un visualiseur audio interactif et moderne avec des effets visuels époustouflants et la possibilité d'exporter des vidéos pour les réseaux sociaux.
 
