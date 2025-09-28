@@ -23,6 +23,11 @@ let recordedChunks = [];
 let audioDuration = 0;
 let isExporting = false;
 let exportAnimationId = null;
+let isPlaying = false;
+
+// NOUVELLES variables pour le slider double
+let startSlider, endSlider, rangeSelection;
+let startTimeDisplay, endTimeDisplay, customDurationDisplay;
 
 // Fonction pour formater le temps en HH:MM:SS
 function formatTime(seconds) {
@@ -58,6 +63,95 @@ function timeToSeconds(timeString) {
   return seconds;
 }
 
+// Fonction pour mettre à jour le slider double
+function updateRangeSlider() {
+  if (!startSlider || !endSlider || !audioDuration) return;
+
+  const startValue = parseInt(startSlider.value);
+  const endValue = parseInt(endSlider.value);
+
+  // S'assurer que start < end
+  if (startValue >= endValue) {
+    if (startSlider === document.activeElement) {
+      endSlider.value = Math.min(startValue + 1, 100);
+    } else {
+      startSlider.value = Math.max(endValue - 1, 0);
+    }
+  }
+
+  const finalStartValue = parseInt(startSlider.value);
+  const finalEndValue = parseInt(endSlider.value);
+
+  // Calculer les positions et durées
+  const startSeconds = (finalStartValue / 100) * audioDuration;
+  const endSeconds = (finalEndValue / 100) * audioDuration;
+  const duration = endSeconds - startSeconds;
+
+  // Mettre à jour la zone sélectionnée (dual-range-fill)
+  if (rangeSelection) {
+    const leftPercent = finalStartValue;
+    const widthPercent = finalEndValue - finalStartValue;
+
+    rangeSelection.style.left = `${leftPercent}%`;
+    rangeSelection.style.width = `${widthPercent}%`;
+  }
+
+  // Mettre à jour les indicateurs de temps
+  if (startTimeDisplay) {
+    startTimeDisplay.textContent = formatTime(startSeconds);
+    startTimeDisplay.style.left = `${finalStartValue}%`;
+  }
+
+  if (endTimeDisplay) {
+    endTimeDisplay.textContent = formatTime(endSeconds);
+    endTimeDisplay.style.left = `${finalEndValue}%`;
+  } // Mettre à jour la durée
+  if (customDurationDisplay) {
+    customDurationDisplay.textContent = `Durée sélectionnée: ${formatTime(
+      duration
+    )}`;
+  }
+}
+
+// Fonction pour initialiser le slider double
+function initializeRangeSlider() {
+  startSlider = document.getElementById("rangeMin");
+  endSlider = document.getElementById("rangeMax");
+  rangeSelection = document.getElementById("rangeFill");
+  startTimeDisplay = document.getElementById("labelMin");
+  endTimeDisplay = document.getElementById("labelMax");
+  customDurationDisplay = document.getElementById("selectedDuration");
+
+  if (startSlider && endSlider) {
+    // Définir la durée maximale
+    if (audioDuration) {
+      endSlider.value = 100;
+      endTimeDisplay.textContent = formatTime(audioDuration);
+    }
+
+    // Event listeners
+    startSlider.addEventListener("input", updateRangeSlider);
+    endSlider.addEventListener("input", updateRangeSlider);
+
+    // Mise à jour initiale
+    updateRangeSlider();
+  }
+}
+
+// Fonction pour obtenir les valeurs du slider
+function getCustomRange() {
+  if (!startSlider || !endSlider || !audioDuration) return null;
+
+  const startPercent = parseInt(startSlider.value) / 100;
+  const endPercent = parseInt(endSlider.value) / 100;
+
+  return {
+    startTime: startPercent * audioDuration,
+    endTime: endPercent * audioDuration,
+    duration: (endPercent - startPercent) * audioDuration,
+  };
+}
+
 // UN SEUL event listener pour fileInput
 document.getElementById("fileInput").addEventListener("change", function (e) {
   const file = e.target.files[0];
@@ -83,6 +177,22 @@ document.getElementById("fileInput").addEventListener("change", function (e) {
   audio.src = URL.createObjectURL(file);
   audio.controls = true;
   audio.loop = false;
+
+  // Ajout des event listeners pour le statut audio
+  audio.addEventListener("play", () => {
+    isPlaying = true;
+    updatePlayPauseButton();
+  });
+
+  audio.addEventListener("pause", () => {
+    isPlaying = false;
+    updatePlayPauseButton();
+  });
+
+  audio.addEventListener("ended", () => {
+    isPlaying = false;
+    updatePlayPauseButton();
+  });
 
   // Récupérer la durée de l'audio
   audio.addEventListener("loadedmetadata", () => {
@@ -113,6 +223,23 @@ document.getElementById("fileInput").addEventListener("change", function (e) {
         exportBtn.style.transition =
           "transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)";
       }, 100);
+    }
+
+    // Activation du bouton pause/play
+    const playPauseBtn = document.getElementById("playPauseButton");
+    if (playPauseBtn) {
+      console.log("Activation du bouton play/pause");
+      playPauseBtn.style.display = "flex";
+      playPauseBtn.style.visibility = "visible";
+      playPauseBtn.style.opacity = "1";
+      playPauseBtn.style.zIndex = "1000";
+      playPauseBtn.style.position = "fixed";
+      playPauseBtn.style.pointerEvents = "auto";
+      playPauseBtn.style.cursor = "pointer";
+      playPauseBtn.style.transform = "translateX(-50%) scale(1)";
+      playPauseBtn.style.transition = "all 0.3s ease";
+      playPauseBtn.title = "Mettre en pause";
+      console.log("Bouton play/pause activé et opaque");
     }
 
     updateCustomDuration();
@@ -196,6 +323,24 @@ function drawShapeOnContext(context, x, y, radius, sides, inset = 1) {
   }
   context.closePath();
   context.stroke();
+}
+
+// Fonction pour mettre à jour le bouton play/pause
+function updatePlayPauseButton() {
+  const playPauseBtn = document.getElementById("playPauseButton");
+  if (!playPauseBtn) return;
+
+  if (isPlaying) {
+    playPauseBtn.textContent = "❚❚";
+    playPauseBtn.classList.add("playing");
+    playPauseBtn.classList.remove("paused");
+    playPauseBtn.title = "Mettre en pause";
+  } else {
+    playPauseBtn.textContent = "▶︎";
+    playPauseBtn.classList.add("paused");
+    playPauseBtn.classList.remove("playing");
+    playPauseBtn.title = "Reprendre la lecture";
+  }
 }
 
 // Fonction pour redimensionner le canvas
@@ -348,6 +493,27 @@ canvas.addEventListener(
   { passive: false }
 );
 
+// Gestionnaire du bouton play/pause
+const playPauseButton = document.getElementById("playPauseButton");
+if (playPauseButton) {
+  playPauseButton.addEventListener("click", () => {
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      // Gérer le contexte audio pour les navigateurs modernes
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().then(() => {
+          audio.play();
+        });
+      } else {
+        audio.play();
+      }
+    }
+  });
+}
+
 // Contrôles panneau
 const panel = document.getElementById("controlPanel");
 const toggleBtn = document.getElementById("togglePanel");
@@ -436,6 +602,17 @@ if (exportButton) {
   exportButton.addEventListener("click", () => {
     exportPopup.classList.add("show");
     addAnimationClasses();
+
+    // S'assurer que la section du dual range slider est visible
+    const customRangeInputs = document.getElementById("customRangeInputs");
+    if (customRangeInputs) {
+      customRangeInputs.style.display = "block";
+    }
+
+    // Initialiser le slider quand le popup s'ouvre
+    setTimeout(() => {
+      initializeRangeSlider();
+    }, 150);
   });
 }
 
@@ -478,16 +655,29 @@ function addAnimationClasses() {
 
 // Gestion des options d'export
 const exportTypeRadios = document.querySelectorAll('input[name="exportType"]');
-const customTimeInputs = document.getElementById("customTimeInputs");
+const customRangeInputs = document.getElementById("customRangeInputs");
+
+// Afficher par défaut la section du dual range slider
+if (customRangeInputs) {
+  customRangeInputs.style.display = "block";
+}
+
+// Initialiser le range slider par défaut
+setTimeout(() => {
+  initializeRangeSlider();
+}, 100);
 
 if (exportTypeRadios) {
   exportTypeRadios.forEach((radio) => {
     radio.addEventListener("change", (e) => {
       if (e.target.value === "custom") {
-        if (customTimeInputs) customTimeInputs.style.display = "block";
-        updateCustomDuration();
+        if (customRangeInputs) customRangeInputs.style.display = "block";
+        // Réinitialiser et mettre à jour le slider
+        setTimeout(() => {
+          initializeRangeSlider();
+        }, 100);
       } else {
-        if (customTimeInputs) customTimeInputs.style.display = "none";
+        if (customRangeInputs) customRangeInputs.style.display = "none";
       }
     });
   });
@@ -921,6 +1111,25 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleBtn.style.transform = "scale(1)";
     }, 600);
   }
+
+  // Initialisation du bouton play/pause (désactivé par défaut)
+  const playPauseBtn = document.getElementById("playPauseButton");
+  if (playPauseBtn) {
+    console.log("Initialisation du bouton play/pause");
+    playPauseBtn.style.opacity = "0.3";
+    playPauseBtn.style.pointerEvents = "none";
+    playPauseBtn.style.cursor = "not-allowed";
+    playPauseBtn.textContent = "▶";
+    playPauseBtn.title = "Chargez d'abord un fichier audio";
+
+    // S'assurer que le bouton reste visible
+    setInterval(() => {
+      if (playPauseBtn && playPauseBtn.style.display === "none") {
+        console.log("Bouton masqué détecté, restauration...");
+        playPauseBtn.style.display = "flex";
+      }
+    }, 1000);
+  }
 });
 
 // Boutons export
@@ -937,23 +1146,28 @@ if (exportVideoBtn) {
     if (exportType === "full") {
       exportVideo(0, audioDuration, quality, format);
     } else {
-      const startTimeEl = document.getElementById("startTime");
-      const endTimeEl = document.getElementById("endTime");
+      // Utilisation des valeurs du slider
+      const range = getCustomRange();
 
-      if (startTimeEl && endTimeEl) {
-        const startTime = timeToSeconds(startTimeEl.value);
-        const endTime = timeToSeconds(endTimeEl.value);
-        const duration = endTime - startTime;
-
-        if (duration <= 0) {
-          alert(
-            "❌ Erreur: Le temps de fin doit être supérieur au temps de début."
-          );
-          return;
-        }
-
-        exportVideo(startTime, duration, quality, format);
+      if (!range) {
+        alert("❌ Erreur: Impossible de récupérer la sélection.");
+        return;
       }
+
+      if (range.duration <= 0) {
+        alert("❌ Erreur: La durée sélectionnée doit être supérieure à 0.");
+        return;
+      }
+
+      if (range.duration > 900) {
+        // 15 minutes max
+        alert(
+          "❌ Erreur: La durée sélectionnée ne peut pas dépasser 15 minutes."
+        );
+        return;
+      }
+
+      exportVideo(range.startTime, range.duration, quality, format);
     }
   });
 }

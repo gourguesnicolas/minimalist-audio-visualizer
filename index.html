@@ -20,6 +20,15 @@
       📹 Exporter vidéo
     </button>
 
+    <!-- NOUVEAU: Bouton pause/play -->
+    <button
+      id="playPauseButton"
+      class="play-pause-btn"
+      style="display: flex; opacity: 0.3"
+    >
+      ▶︎
+    </button>
+
     <!-- Message de succès -->
     <div id="successMessage" class="success-message">
       ✅ Vidéo exportée avec succès!
@@ -36,31 +45,52 @@
         <div class="popup-body">
           <div class="export-option fade-in-up">
             <label>
-              <input type="radio" name="exportType" value="full" checked />
+              <input type="radio" name="exportType" value="full" />
               Exporter la musique complète
             </label>
             <p class="duration-info" id="fullDuration">Durée: --:--</p>
           </div>
 
+          <!-- Section avec slider double -->
           <div class="export-option fade-in-up">
             <label>
-              <input type="radio" name="exportType" value="custom" />
+              <input type="radio" name="exportType" value="custom" checked />
               Exporter un extrait personnalisé
             </label>
+
+            <!-- Container du range slider simplifié -->
             <div
-              class="time-inputs"
-              id="customTimeInputs"
-              style="display: none"
+              class="range-container"
+              id="customRangeInputs"
+              style="display: block"
             >
-              <div class="time-input-group">
-                <label>Début:</label>
-                <input type="time" id="startTime" step="1" value="00:00:00" />
+              <div class="range-wrapper">
+                <div class="range-track"></div>
+                <div class="range-fill" id="rangeFill"></div>
+                <input
+                  type="range"
+                  id="rangeMin"
+                  class="range-slider"
+                  min="0"
+                  max="100"
+                  value="0"
+                />
+                <input
+                  type="range"
+                  id="rangeMax"
+                  class="range-slider"
+                  min="0"
+                  max="100"
+                  value="100"
+                />
+                <div class="range-labels">
+                  <span class="time-label" id="labelMin">00:00</span>
+                  <span class="time-label" id="labelMax">03:15</span>
+                </div>
               </div>
-              <div class="time-input-group">
-                <label>Fin:</label>
-                <input type="time" id="endTime" step="1" value="00:01:00" />
+              <div class="duration-display" id="selectedDuration">
+                Durée sélectionnée: 03:15
               </div>
-              <p class="duration-info" id="customDuration">Durée: 01:00</p>
             </div>
           </div>
 
@@ -68,7 +98,7 @@
             <label>📱 Format de la vidéo:</label>
             <select id="formatSelect">
               <option value="landscape" selected>
-                🖥️ Paysage (16:9) - YouTube Desktop
+                🖥️ Paysage (16:9) - YouTube/Desktop
               </option>
               <option value="portrait">
                 📱 Portrait (9:16) - Reels/Stories
@@ -80,8 +110,8 @@
           <div class="quality-section fade-in-up">
             <label>🎬 Qualité vidéo:</label>
             <select id="qualitySelect">
-              <option value="720">🎥 HD (720p)</option>
               <option value="1080" selected>🎬 Full HD (1080p)</option>
+              <option value="720">🎥 HD (720p)</option>
               <option value="480">📱 SD (480p)</option>
             </select>
           </div>
@@ -114,7 +144,7 @@
             </div>
             <p id="progressText">Préparation de l'export...</p>
             <button id="cancelExportBtn" class="cancel-export-btn">
-              ❌ Annuler l'export
+              ✖ Annuler l'export
             </button>
           </div>
         </div>
